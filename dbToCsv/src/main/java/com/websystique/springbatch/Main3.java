@@ -10,8 +10,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Main3 {
 
-	@SuppressWarnings("resource")
-	public static void main(String areg[]){
+	public static void main(String args[]){
 		
 		ApplicationContext context = new ClassPathXmlApplicationContext("spring-batch-queue-context.xml");
 		
