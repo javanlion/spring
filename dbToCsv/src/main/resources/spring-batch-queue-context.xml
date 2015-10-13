@@ -13,8 +13,7 @@
     </bean>
 
 
-    <!-- ItemReader which reads from database and returns the row mapped by
-        rowMapper -->
+    <!-- ItemReader which reads from database and returns the row mapped by rowMapper -->
     <bean id="databaseItemReader" class="org.springframework.batch.item.database.JdbcCursorItemReader">
         <property name="dataSource" ref="dataSource"/>
         <property name="sql" value="SELECT STUDENT_NAME, DOB, PERCENTAGE FROM EXAM_RESULT
@@ -28,16 +27,14 @@
     <!-- ItemWriter writes a line into output flat file -->
     <bean id="flatFileItemWriter" class="org.springframework.batch.item.file.FlatFileItemWriter" scope="step">
         <property name="resource" value="file:csv/examResult-#{stepExecutionContext[queueName]}.txt"/>
-        <property name="lineAggregator">
-            <!-- An Aggregator which converts an object into delimited list of strings -->
-            <bean class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
-                <property name="delimiter" value=","/>
-                <property name="fieldExtractor">
-                    <!-- Extractor which returns the value of beans property through reflection -->
-                    <bean class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
-                        <property name="names" value="studentName, percentage, dob"/>
-                    </bean>
-                </property>
+        <property name="lineAggregator" ref="delimitedLineAggregator"/>
+    </bean>
+
+    <bean id="delimitedLineAggregator" class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
+        <property name="delimiter" value=","/>
+        <property name="fieldExtractor">
+            <bean class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
+                <property name="names" value="studentName, percentage, dob"/>
             </bean>
         </property>
     </bean>
@@ -47,26 +44,11 @@
     <bean id="jobListener" class="com.websystique.springbatch.ExamResultJobListener"/>
 
     <!-- Optional ItemProcessor to perform business logic/filtering on the input records -->
-    <bean id="itemFilterProcessor" class="com.websystique.springbatch.processor.ExamResultItemProcessor"/>
-    <bean id="itemModifierProcessor" class="com.websystique.springbatch.processor.ExamResultItemUppercaseProcessor"/>
+    <bean id="itemFilterProcessor" class="com.websystique.springbatch.processor.ItemFilter"/>
+    <bean id="itemToUppercaseProcessor" class="com.websystique.springbatch.processor.ItemToUppercase"/>
 
     <!-- Step will need a transaction manager -->
     <bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager"/>
-
-    <!-- Actual Job -->
-    <!--<batch:job id="examResultJob">-->
-    <!--<batch:step id="step1">-->
-    <!--<batch:tasklet transaction-manager="transactionManager">-->
-    <!--<batch:chunk reader="databaseItemReader"-->
-    <!--processor="itemFilterProcessor"-->
-    <!--writer="flatFileItemWriter"-->
-    <!--commit-interval="10"/>-->
-    <!--</batch:tasklet>-->
-    <!--</batch:step>-->
-    <!--<batch:listeners>-->
-    <!--<batch:listener ref="jobListener"/>-->
-    <!--</batch:listeners>-->
-    <!--</batch:job>-->
 
 
     <bean id="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor">
@@ -127,24 +109,22 @@
         </batch:tasklet>
     </batch:step>
 
-    <bean id="multiResourceReader"
-          class=" org.springframework.batch.item.file.MultiResourceItemReader">
-        <property name="resources" value="file:csv/examResult-*.txt" />
-        <property name="delegate" ref="flatFileItemReader" />
+    <bean id="multiResourceReader" class=" org.springframework.batch.item.file.MultiResourceItemReader" scope="step">
+        <property name="resources" value="file:csv/examResult-*.txt"/>
+        <property name="delegate" ref="flatFileItemReader"/>
     </bean>
 
-    <bean id="flatFileItemReader"
-          class="org.springframework.batch.item.file.FlatFileItemReader">
+    <bean id="flatFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader" scope="step">
         <property name="lineMapper">
             <bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
                 <property name="lineTokenizer">
                     <bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
-                        <property name="names" value="studentName, percentage, dob" />
+                        <property name="names" value="studentName, percentage, dob"/>
                     </bean>
                 </property>
                 <property name="fieldSetMapper">
                     <bean class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
-                        <property name="prototypeBeanName" value="examResult" />
+                        <property name="prototypeBeanName" value="examResult"/>
                     </bean>
                 </property>
             </bean>
@@ -153,19 +133,7 @@
 
     <bean id="flatFileItemWriterJoiner" class="org.springframework.batch.item.file.FlatFileItemWriter">
         <property name="resource" value="file:csv/examResult.txt"/>
-        <!--<property name="appendAllowed" value="true" />-->
-        <property name="lineAggregator">
-            <!-- An Aggregator which converts an object into delimited list of strings -->
-            <bean class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
-                <property name="delimiter" value=","/>
-                <property name="fieldExtractor">
-                    <!-- Extractor which returns the value of beans property through reflection -->
-                    <bean class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
-                        <property name="names" value="studentName, percentage, dob"/>
-                    </bean>
-                </property>
-            </bean>
-        </property>
+        <property name="lineAggregator" ref="delimitedLineAggregator"/>
     </bean>
 
     <bean id="examResult" class="com.websystique.springbatch.dao.model.ExamResultFlat" scope="prototype"/>
@@ -196,8 +164,8 @@
     <bean id="compositeItemProcessor" class="org.springframework.batch.item.support.CompositeItemProcessor">
         <property name="delegates">
             <list>
-                <bean class="com.websystique.springbatch.processor.ExamResultItemProcessor"/>
-                <bean class="com.websystique.springbatch.processor.ExamResultItemUppercaseProcessor"/>
+                <bean class="com.websystique.springbatch.processor.ItemFilter"/>
+                <bean class="com.websystique.springbatch.processor.ItemToUppercase"/>
             </list>
         </property>
     </bean>
@@ -210,7 +178,7 @@
 
     <batch:step id="step2-NameToUppercase" parent="step1-FilterPercentage">
         <batch:tasklet start-limit="5">
-            <batch:chunk processor="itemModifierProcessor" commit-interval="5"/>
+            <batch:chunk processor="itemToUppercaseProcessor" commit-interval="5"/>
         </batch:tasklet>
     </batch:step>
 

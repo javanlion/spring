@@ -3,7 +3,7 @@ package com.websystique.springbatch.processor;
 import com.websystique.springbatch.dao.model.ExamResult;
 import org.springframework.batch.item.ItemProcessor;
 
-public class ExamResultItemUppercaseProcessor implements ItemProcessor<ExamResult, ExamResult> {
+public class ItemToUppercase implements ItemProcessor<ExamResult, ExamResult> {
 
 
     @Override

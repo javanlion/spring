@@ -46,8 +46,8 @@
     <bean id="jobListener" class="com.websystique.springbatch.ExamResultJobListener"/>
 
     <!-- Optional ItemProcessor to perform business logic/filtering on the input records -->
-    <bean id="itemFilterProcessor" class="com.websystique.springbatch.processor.ExamResultItemProcessor"/>
-    <bean id="itemModifierProcessor" class="com.websystique.springbatch.processor.ExamResultItemUppercaseProcessor"/>
+    <bean id="itemFilterProcessor" class="com.websystique.springbatch.processor.ItemFilter"/>
+    <bean id="itemModifierProcessor" class="com.websystique.springbatch.processor.ItemToUppercase"/>
 
     <!-- Step will need a transaction manager -->
     <bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager"/>
@@ -183,8 +183,8 @@
     <bean id="compositeItemProcessor" class="org.springframework.batch.item.support.CompositeItemProcessor">
         <property name="delegates">
             <list>
-                <bean class="com.websystique.springbatch.processor.ExamResultItemProcessor"/>
-                <bean class="com.websystique.springbatch.processor.ExamResultItemUppercaseProcessor"/>
+                <bean class="com.websystique.springbatch.processor.ItemFilter"/>
+                <bean class="com.websystique.springbatch.processor.ItemToUppercase"/>
             </list>
         </property>
     </bean>

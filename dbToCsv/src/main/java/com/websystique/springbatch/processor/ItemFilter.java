@@ -3,7 +3,7 @@ package com.websystique.springbatch.processor;
 import com.websystique.springbatch.dao.model.ExamResult;
 import org.springframework.batch.item.ItemProcessor;
 
-public class ExamResultItemProcessor implements ItemProcessor<ExamResult, ExamResult> {
+public class ItemFilter implements ItemProcessor<ExamResult, ExamResult> {
 
 
     @Override

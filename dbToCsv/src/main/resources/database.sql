@@ -55,6 +55,15 @@ values('Sonya Blade2','1988-12-03',99);
 insert into exam_result(student_name,dob,percentage)
 values('Javans','1987-03-05',100);
 
+insert into exam_result(student_name,dob,percentage)
+values('Javans','1987-03-05',99);
+
+insert into exam_result(student_name,dob,percentage)
+values('Javans','1987-03-05',98);
+
+insert into exam_result(student_name,dob,percentage)
+values('Javans','1987-03-05',97);
+
 commit;
 
 
